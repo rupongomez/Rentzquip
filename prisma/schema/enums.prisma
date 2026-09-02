@@ -1,18 +1,19 @@
+enum OrganizationRole {
+  OWNER
+  ADMIN
+  MANAGER
+  DEVELOPER
+  MEMBER
+  GUEST
+}
+
 enum Role {
   SUPER_ADMIN
   ADMIN
-  DOCTOR
-  PATIENT
+  USER
 }
 
 enum UserStatus {
   ACTIVE
   BLOCKED
-  DELETED
-}
-
-enum Gender {
-  MALE
-  FEMALE
-  OTHER
 }
