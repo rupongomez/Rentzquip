@@ -2,16 +2,20 @@ model User {
   id                 String     @id @default(uuid())
   name               String
   email              String     @unique
-  password           String
+  password           String?
   avatar             String?
-  role               Role       @default(USER)
+  role               Role       @default(CUSTOMER)
   status             UserStatus @default(ACTIVE)
   emailVerified     Boolean    @default(false)
   isDeleted          Boolean    @default(false)
+  contactNumber       String?
+
+googleId            String?    @unique
+authProvider       AuthProvider @default(CREDENTIALS)
 
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
 
-  organizationMembers OrganizationMembers[]
+  
   @@map("users")
 }

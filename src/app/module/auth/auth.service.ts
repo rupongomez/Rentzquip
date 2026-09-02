@@ -5,14 +5,18 @@ import { prisma } from "../../lib/prisma";
 import { jwtUtils } from "../../utils/jwt";
 import {
   ILoginUserPayload,
-  IRegisterPatientPayload,
+  IRegisterUserPayload,
   IRequestUser,
 } from "./auth.interface";
 import { Role, UserStatus } from "../../../generated/prisma/enums";
 
-const registerPatient = async (payload: IRegisterPatientPayload) => {
-  const { name, password } = payload;
+const registerUser = async (payload: IRegisterUserPayload) => {
+  const { name, password, role } = payload;
   const email = payload.email.trim().toLowerCase();
+
+  if (role !== Role.CUSTOMER && role !== Role.PROVIDER) {
+    throw new Error("Invalid role");
+  }
 
   const isUserExists = await prisma.user.findUnique({
     where: { email },
@@ -29,7 +33,7 @@ const registerPatient = async (payload: IRegisterPatientPayload) => {
       name,
       email,
       password: hashedPassword,
-      role: Role.USER,
+      role: role,
       status: UserStatus.ACTIVE,
       emailVerified: false,
       isDeleted: false,
@@ -182,7 +186,7 @@ const refreshToken = async (token: string) => {
 };
 
 export const AuthService = {
-  registerPatient,
+  registerUser,
   loginUser,
   getMe,
   refreshToken,

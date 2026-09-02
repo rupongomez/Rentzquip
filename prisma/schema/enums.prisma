@@ -1,16 +1,13 @@
-enum OrganizationRole {
-  OWNER
-  ADMIN
-  MANAGER
-  DEVELOPER
-  MEMBER
-  GUEST
+enum AuthProvider {
+  GOOGLE
+ CREDENTIALS
 }
 
 enum Role {
-  SUPER_ADMIN
   ADMIN
-  USER
+  MODERATOR
+  PROVIDER
+  CUSTOMER
 }
 
 enum UserStatus {
