@@ -1,6 +1,6 @@
 enum AuthProvider {
   GOOGLE
- CREDENTIALS
+  CREDENTIALS
 }
 
 enum Role {
@@ -13,4 +13,18 @@ enum Role {
 enum UserStatus {
   ACTIVE
   BLOCKED
+}
+
+enum EquipmentStatus {
+  AVAILABLE
+  RENTED
+  MAINTENANCE
+}
+
+
+enum ProviderStatus {
+  ACTIVE
+  BLOCKED
+  PENDING
+  REJECTED
 }

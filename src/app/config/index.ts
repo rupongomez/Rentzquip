@@ -23,4 +23,12 @@ export default {
   smtp_user: process.env.SMTP_USER!,
   smtp_password: process.env.SMTP_PASSWORD!,
   email_sender: process.env.EMAIL_SENDER!,
+
+  test_admin_email: process.env.test_admin_email!,
+  test_admin_password: process.env.test_admin_password!,
+  test_admin_name: process.env.test_admin_name!,
+
+  test_mod_email: process.env.test_mod_email!,
+  test_mod_password: process.env.test_mod_password!,
+  test_mod_name: process.env.test_mod_name!,
 };
