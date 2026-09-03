@@ -31,4 +31,6 @@ export default {
   test_mod_email: process.env.test_mod_email!,
   test_mod_password: process.env.test_mod_password!,
   test_mod_name: process.env.test_mod_name!,
+
+  google_client_id: process.env.GOOGLE_CLIENT_ID!,
 };

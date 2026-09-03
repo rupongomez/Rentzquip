@@ -4,11 +4,16 @@ import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import { jwtUtils } from "../../utils/jwt";
 import {
+  IGoogleLoginPayload,
   ILoginUserPayload,
   IRegisterUserPayload,
   IRequestUser,
 } from "./auth.interface";
-import { Role, UserStatus } from "../../../generated/prisma/enums";
+import {
+  AuthProvider,
+  Role,
+  UserStatus,
+} from "../../../generated/prisma/enums";
 import crypto from "crypto";
 import { redisClient } from "../../lib/redis";
 import path from "path";
@@ -16,6 +21,8 @@ import ejs from "ejs";
 import { transporter } from "../../lib/nodemailer";
 import { AppError } from "../../utils/AppError";
 import httpStatus from "http-status";
+import { TokenPayload } from "google-auth-library";
+import { googleClient } from "../../lib/googleAuth";
 
 const registerUser = async (payload: IRegisterUserPayload) => {
   const { name, password, role } = payload;
@@ -294,10 +301,168 @@ const refreshToken = async (token: string) => {
   };
 };
 
+const loginWithGoogle = async (payload: IGoogleLoginPayload) => {
+  let googleIdTokenPayload: TokenPayload | null | undefined = null;
+
+  try {
+    const ticket = googleClient.verifyIdToken({
+      idToken: payload.idToken,
+      audience: config.google_client_id,
+    });
+
+    googleIdTokenPayload = (await ticket).getPayload();
+  } catch (error) {
+    console.log("Google ID token verification failed", error);
+    throw new AppError(httpStatus.UNAUTHORIZED, "Invalid Google ID token");
+  }
+
+  if (!googleIdTokenPayload) {
+    throw new AppError(
+      httpStatus.UNAUTHORIZED,
+      "Google email was not found in the ID token payload",
+    );
+  }
+
+  if (!googleIdTokenPayload.email) {
+    throw new AppError(
+      httpStatus.UNAUTHORIZED,
+      "Google ID token does not contain an email",
+    );
+  }
+
+  if (!googleIdTokenPayload.name) {
+    throw new AppError(
+      httpStatus.UNAUTHORIZED,
+      "Google ID token does not contain a name",
+    );
+  }
+
+  const isUserExists = await prisma.user.findUnique({
+    where: {
+      email: googleIdTokenPayload.email,
+      googleId: googleIdTokenPayload.sub,
+    },
+  });
+
+  let user = isUserExists;
+
+  if (!isUserExists) {
+    const isUserExistWithCredentials = await prisma.user.findUnique({
+      where: {
+        email: googleIdTokenPayload.email,
+        authProvider: AuthProvider.CREDENTIALS,
+      },
+    });
+
+    if (isUserExistWithCredentials) {
+      if (isUserExistWithCredentials.status === UserStatus.BLOCKED) {
+        throw new AppError(httpStatus.FORBIDDEN, "User is blocked");
+      }
+      if (isUserExistWithCredentials.isDeleted === true) {
+        throw new AppError(httpStatus.GONE, "User is deleted");
+      }
+
+      user = await prisma.user.update({
+        where: {
+          email: googleIdTokenPayload.email,
+        },
+        data: {
+          googleId: googleIdTokenPayload.sub,
+          authProvider: AuthProvider.GOOGLE,
+          avatar: googleIdTokenPayload.picture,
+        },
+      });
+
+      if (!isUserExistWithCredentials.emailVerified) {
+        await prisma.user.update({
+          where: {
+            email: googleIdTokenPayload.email,
+          },
+          data: {
+            emailVerified: true,
+          },
+        });
+      }
+    } else {
+      user = await prisma.user.create({
+        data: {
+          name: googleIdTokenPayload.name,
+          email: googleIdTokenPayload.email,
+          googleId: googleIdTokenPayload.sub,
+          authProvider: AuthProvider.GOOGLE,
+          emailVerified: true,
+          role: Role.CUSTOMER,
+          avatar: googleIdTokenPayload.picture,
+        },
+      });
+
+      const templatePath = path.join(
+        process.cwd(),
+        "src/app/templates/welcome-user.ejs",
+      );
+
+      const loginUrl = `${config.frontend_url}/login`;
+
+      const templateData = {
+        name: user.name,
+        loginUrl: loginUrl,
+      };
+      const html = await ejs.renderFile(templatePath, templateData);
+
+      await transporter.sendMail({
+        from: config.email_sender,
+        to: user.email,
+        subject: "Welcome to Rentzquip - A Equipment Rental Platform",
+        html,
+      });
+    }
+  }
+
+  if (!user) {
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      "User creation or retrieval failed",
+    );
+  }
+
+  if (user.status === UserStatus.BLOCKED) {
+    throw new AppError(httpStatus.FORBIDDEN, "User is blocked");
+  }
+
+  if (user.isDeleted === true) {
+    throw new AppError(httpStatus.GONE, "User is deleted");
+  }
+
+  const jwtPayload = {
+    userId: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  };
+
+  const accessToken = jwtUtils.createToken(
+    jwtPayload,
+    config.jwt_access_secret,
+    config.jwt_access_expires_in as SignOptions,
+  );
+
+  const refreshToken = jwtUtils.createToken(
+    jwtPayload,
+    config.jwt_refresh_secret,
+    config.jwt_refresh_expires_in as SignOptions,
+  );
+
+  return {
+    accessToken,
+    refreshToken,
+  };
+};
+
 export const AuthService = {
   registerUser,
   loginUser,
   resendOtp,
+  loginWithGoogle,
   getMe,
   refreshToken,
   verifyUserOtp,

@@ -105,6 +105,32 @@ const getMe = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const loginWithGoogle = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+  const { accessToken, refreshToken } =
+    await AuthService.loginWithGoogle(payload);
+
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
+  });
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: "You have successfully logged in with Google.",
+    data: { accessToken, refreshToken },
+  });
+});
+
 const refreshToken = catchAsync(async (req: Request, res: Response) => {
   console.log(req.cookies);
   if (!req.cookies.refreshToken) {
@@ -142,6 +168,7 @@ export const AuthController = {
   verifyUserOtp,
   resendOtp,
   loginUser,
+  loginWithGoogle,
   getMe,
   refreshToken,
 };
