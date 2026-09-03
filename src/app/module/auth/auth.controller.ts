@@ -106,6 +106,7 @@ const getMe = catchAsync(async (req: Request, res: Response) => {
 });
 
 const refreshToken = catchAsync(async (req: Request, res: Response) => {
+  console.log(req.cookies);
   if (!req.cookies.refreshToken) {
     throw new Error("Refresh token is missing");
   }

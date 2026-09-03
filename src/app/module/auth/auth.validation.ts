@@ -13,3 +13,17 @@ export const RegisterUserValidationZodSchema = z.object({
     .regex(/[0-9]/, "Password must contain atleast 1 numberr")
     .regex(/[^A-Za-z0-9]/, "Password must contain atleast 1 special character"),
 });
+
+export const VerifyOtpValidationZodSchema = z.object({
+  email: z.email("Invalid email address"),
+  otp: z.string().length(6, "OTP must be 6 digits"),
+});
+
+export const resendOtpValidationZodSchema = z.object({
+  email: z.email("Invalid email address"),
+});
+
+export const LoginUserValidationZodSchema = z.object({
+  email: z.email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+});
