@@ -43,7 +43,10 @@ const registerUser = async (payload: IRegisterUserPayload) => {
     );
   }
 
-  const hashedPassword = await bcrypt.hash(password, 8);
+  const hashedPassword = await bcrypt.hash(
+    password,
+    Number(config.bcrypt_salt_rounds),
+  );
 
   const createdUser = await prisma.user.create({
     data: {
@@ -231,6 +234,113 @@ const resendOtp = async (email: string) => {
     from: config.smtp_user,
     to: user.email,
     subject: "Verify your email address",
+    html: html,
+  });
+};
+
+const forgotPassword = async (email: string) => {
+  if (!email) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Email is required");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  const expirationSeconds = 5 * 60;
+  const otpKey = `rentzquip-user-forget-password-otp:${email}`;
+
+  const otpValue = crypto.randomInt(100000, 1000000).toString();
+  await redisClient.set(otpKey, otpValue, {
+    expiration: {
+      type: "EX",
+      value: expirationSeconds,
+    },
+  });
+
+  const templatePath = path.join(
+    process.cwd(),
+    "src/app/templates/forgot-password-otp.ejs",
+  );
+
+  const templateData = {
+    name: user.name,
+    otp: otpValue,
+    expirationMinutes: expirationSeconds / 60,
+  };
+
+  const html = await ejs.renderFile(templatePath, templateData);
+
+  await transporter.sendMail({
+    from: config.smtp_user,
+    to: user.email,
+    subject: "Reset your password",
+    html: html,
+  });
+};
+
+const resetPassword = async (
+  email: string,
+  otp: string,
+  newPassword: string,
+) => {
+  if (!email || !otp || !newPassword) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Email, OTP and new password are required",
+    );
+  }
+
+  if (!email || !otp) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Email and OTP are required");
+  }
+
+  const otpKey = `rentzquip-user-forget-password-otp:${email}`;
+  const storedOtp = await redisClient.get(otpKey);
+
+  if (!storedOtp) {
+    throw new AppError(httpStatus.NOT_FOUND, "OTP not found or expired");
+  }
+
+  if (otp !== storedOtp) {
+    throw new AppError(httpStatus.UNAUTHORIZED, "Invalid OTP");
+  }
+
+  const hashedPassword = await bcrypt.hash(
+    newPassword,
+    Number(config.bcrypt_salt_rounds),
+  );
+
+  const user = await prisma.user.update({
+    where: { email },
+    data: { password: hashedPassword },
+    omit: { password: true },
+  });
+
+  await redisClient.del(otpKey);
+
+  const templatePath = path.join(
+    process.cwd(),
+    "src/app/templates/password-reset-successful.ejs",
+  );
+
+  const loginUrl = `${config.frontend_url}/login`;
+
+  const templateData = {
+    name: user.name,
+    loginUrl: loginUrl,
+  };
+
+  const html = await ejs.renderFile(templatePath, templateData);
+
+  await transporter.sendMail({
+    from: config.smtp_user,
+    to: user.email,
+    subject: "Reset your password",
     html: html,
   });
 };
@@ -462,6 +572,8 @@ export const AuthService = {
   registerUser,
   loginUser,
   resendOtp,
+  forgotPassword,
+  resetPassword,
   loginWithGoogle,
   getMe,
   refreshToken,

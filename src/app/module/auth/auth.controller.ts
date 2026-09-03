@@ -59,6 +59,30 @@ const resendOtp = catchAsync(async (req: Request, res: Response) => {
     data: {},
   });
 });
+const forgetPassword = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+  await AuthService.forgotPassword(payload.email);
+
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message:
+      "A forgot password OTP has been sent to your email. Please check your email to verify your account.",
+    data: {},
+  });
+});
+const resetPassword = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+  await AuthService.resetPassword(payload.email, payload.otp, payload.password);
+
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message:
+      "Your password has been reset successfully. You can now log in with your new password.",
+    data: {},
+  });
+});
 
 const loginUser = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
@@ -168,6 +192,8 @@ export const AuthController = {
   verifyUserOtp,
   resendOtp,
   loginUser,
+  forgetPassword,
+  resetPassword,
   loginWithGoogle,
   getMe,
   refreshToken,

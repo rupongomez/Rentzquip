@@ -34,11 +34,9 @@ router.post(
   validateRequest(LoginUserValidationZodSchema),
   AuthController.loginUser,
 );
-router.post(
-  "/login-with-google",
-
-  AuthController.loginWithGoogle,
-);
+router.post("/login-with-google", AuthController.loginWithGoogle);
+router.post("/forgot-password", AuthController.forgetPassword);
+router.post("/reset-password", AuthController.resetPassword);
 router.get(
   "/me",
   auth(Role.PROVIDER, Role.CUSTOMER, Role.ADMIN, Role.MODERATOR),
