@@ -12,6 +12,10 @@ router.post(
   validateRequest(RegisterUserValidationZodSchema),
   AuthController.registerUser,
 );
+
+router.post("/verify-otp", AuthController.verifyUserOtp);
+
+router.post("/resend-otp", AuthController.resendOtp);
 router.post("/login", AuthController.loginUser);
 router.get(
   "/me",

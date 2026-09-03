@@ -5,11 +5,23 @@ import { sendResponse } from "../../utils/sendResponse";
 import { IRequestUser } from "./auth.interface";
 import { AuthService } from "./auth.service";
 
-const registerPatient = catchAsync(async (req: Request, res: Response) => {
+const registerUser = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
-  const result = await AuthService.registerPatient(payload);
+  await AuthService.registerUser(payload);
 
-  const { accessToken, refreshToken, user } = result;
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message:
+      "Your account has been created successfully. Please check your email for the OTP to verify your account.",
+    data: {},
+  });
+});
+
+const verifyUserOtp = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+  const result = await AuthService.verifyUserOtp(payload.email, payload.otp);
+  const { accessToken, refreshToken } = result;
 
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
@@ -25,14 +37,26 @@ const registerPatient = catchAsync(async (req: Request, res: Response) => {
   });
 
   sendResponse(res, {
-    statusCode: httpStatus.CREATED,
+    statusCode: httpStatus.OK,
     success: true,
-    message: "Patient registered successfully",
+    message: "OTP verified successfully",
     data: {
       accessToken,
       refreshToken,
-      user,
     },
+  });
+});
+
+const resendOtp = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+  await AuthService.resendOtp(payload.email);
+
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message:
+      "A new OTP has been sent to your email. Please check your email to verify your account.",
+    data: {},
   });
 });
 
@@ -113,7 +137,9 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const AuthController = {
-  registerPatient,
+  registerUser,
+  verifyUserOtp,
+  resendOtp,
   loginUser,
   getMe,
   refreshToken,
