@@ -12,9 +12,9 @@ model Equipment {
   
 
   categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id],onDelete: Cascade, onUpdate: Cascade)
   providerId String
-  provider   Provider @relation(fields: [providerId], references: [id])
+  provider   Provider @relation(fields: [providerId], references: [id],onDelete: Cascade, onUpdate: Cascade)
 
 
   status          EquipmentStatus @default(AVAILABLE)

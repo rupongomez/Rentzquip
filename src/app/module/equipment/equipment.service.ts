@@ -11,6 +11,7 @@ const createEquipment = async (
   images: Express.Multer.File[],
   user: RequestUser,
 ) => {
+  // console.log(equipmentData, "from service");
   const {
     name,
     categoryId,
@@ -21,7 +22,6 @@ const createEquipment = async (
     rentalPrice,
     securityDeposit,
   } = equipmentData;
-
   const getUser = await prisma.user.findFirst({
     where: {
       id: user.userId,
@@ -40,6 +40,16 @@ const createEquipment = async (
 
   if (!isProviderExist) {
     throw new AppError(httpStatus.NOT_FOUND, "Provider not found");
+  }
+
+  const isCategoryExist = await prisma.category.findFirst({
+    where: {
+      id: categoryId,
+    },
+  });
+
+  if (!isCategoryExist) {
+    throw new AppError(httpStatus.NOT_FOUND, "Category not found");
   }
 
   const imageUploadResult = await Promise.all(
@@ -66,9 +76,8 @@ const createEquipment = async (
       });
     }),
   );
-
-  const newEquipment = await prisma.equipment.create({
-    data: {
+  console.log(
+    {
       name,
       categoryId,
       brand,
@@ -77,7 +86,21 @@ const createEquipment = async (
       quantity,
       rentalPrice,
       securityDeposit,
-      imagePublicId: imageUploadResult.map((img) => ({
+    },
+    "from service",
+  );
+
+  const newEquipment = await prisma.equipment.create({
+    data: {
+      name: equipmentData.name,
+      categoryId: equipmentData.categoryId,
+      brand: equipmentData.brand,
+      description: equipmentData.description,
+      model: equipmentData.model,
+      quantity: equipmentData.quantity,
+      rentalPrice: equipmentData.rentalPrice,
+      securityDeposit: equipmentData.securityDeposit,
+      imageUrl: imageUploadResult.map((img) => ({
         url: img.secure_url,
         publicId: img.public_id,
       })),
