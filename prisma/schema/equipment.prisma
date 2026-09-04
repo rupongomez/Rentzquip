@@ -7,8 +7,8 @@ model Equipment {
   quantity   Int  @default(1)
   rentalPrice     Decimal         @db.Decimal(10, 2)
   securityDeposit Decimal         @db.Decimal(10, 2)
-  imageUrl    String
-  imagePublicId String
+  imageUrl    Json?
+ 
   
 
   categoryId String

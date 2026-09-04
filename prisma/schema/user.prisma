@@ -17,6 +17,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   provider Provider[]
+  category Category[]
 
   @@map("users")
 }

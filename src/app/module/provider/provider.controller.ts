@@ -27,6 +27,22 @@ const applyToBeProvider = catchAsync(
   },
 );
 
+const getProviderByUserId = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as RequestUser;
+    const provider = await ProviderService.getProviderByUserId(user.userId);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Provider found successfully",
+      data: {
+        provider,
+      },
+    });
+  },
+);
+
 export const ProviderController = {
   applyToBeProvider,
+  getProviderByUserId,
 };

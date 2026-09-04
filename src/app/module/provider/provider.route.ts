@@ -14,4 +14,6 @@ router.post(
   ProviderController.applyToBeProvider,
 );
 
+router.get("/me", auth(Role.PROVIDER), ProviderController.getProviderByUserId);
+
 export const ProviderRoute = router;

@@ -55,6 +55,24 @@ const applyToBeProvider = async (
   return newProvider;
 };
 
+const getProviderByUserId = async (userId: string) => {
+  const provider = await prisma.provider.findFirst({
+    where: {
+      userId,
+    },
+  });
+
+  if (!provider) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      "Provider not found for the given user ID.",
+    );
+  }
+
+  return provider;
+};
+
 export const ProviderService = {
   applyToBeProvider,
+  getProviderByUserId,
 };

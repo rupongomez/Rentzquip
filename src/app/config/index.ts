@@ -33,4 +33,8 @@ export default {
   test_mod_name: process.env.test_mod_name!,
 
   google_client_id: process.env.GOOGLE_CLIENT_ID!,
+
+  cloudinary_cloud_name: process.env.CLOUDINARY_CLOUDE_NAME!,
+  cloudinary_api_key: process.env.CLOUDINARY_API_KEY!,
+  cloudinary_api_secret: process.env.CLOUDINARY_API_SECRET!,
 };
