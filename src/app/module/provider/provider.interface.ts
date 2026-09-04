@@ -1,6 +1,6 @@
 export interface ProviderPayload {
-  address: string;
-  description: string;
-  imageUrl?: string;
-  phoneNumber: string;
+	address: string;
+	description: string;
+	imageUrl?: string;
+	phoneNumber: string;
 }

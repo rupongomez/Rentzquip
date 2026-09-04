@@ -8,10 +8,10 @@ import { auth } from "../../middleware/checkAuth";
 const router = Router();
 
 router.post(
-  "/create",
-  validateRequest(categoryPayloadValidationZodSchema),
-  auth(Role.ADMIN, Role.MODERATOR),
-  CategoryController.createCategory,
+	"/create",
+	validateRequest(categoryPayloadValidationZodSchema),
+	auth(Role.ADMIN, Role.MODERATOR),
+	CategoryController.createCategory,
 );
 
 router.get("/", CategoryController.getCategories);
