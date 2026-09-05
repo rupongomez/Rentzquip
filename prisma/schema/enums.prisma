@@ -35,3 +35,11 @@ enum PaymentStatus {
   FAILED
   REFUNDED
 }
+
+enum RentalStatus {
+  PENDING
+  ONGOING
+  COMPLETED
+  CANCELLED
+  LATE
+}

@@ -9,6 +9,8 @@ model Rental {
   equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   quantity    Int
 
+  rentalStatus   RentalStatus @default(PENDING)
+
   startDate       DateTime
   endDate         DateTime
   rentalDays      Int

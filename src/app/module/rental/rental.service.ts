@@ -18,12 +18,12 @@ const createRent = async (rentalData: IRentalPayload, user: RequestUser) => {
     }
 
     // TODO:or quantity more then available quantity
-    // if (getEquipment.quantity < rentalData.quantity) {
-    //   throw new AppError(
-    //     httpStatus.BAD_REQUEST,
-    //     "Requested quantity exceeds available equipment quantity",
-    //   );
-    // }
+    if (getEquipment.quantity < rentalData.quantity) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "Requested quantity exceeds available equipment quantity",
+      );
+    }
     if (getEquipment.quantity <= 0) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
