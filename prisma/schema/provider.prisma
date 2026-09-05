@@ -1,23 +1,24 @@
-model Provider{
-    id          String  @id @default(uuid())
-    name        String
-    email       String  @unique
-    phoneNumber String
-    address     String
-    description String?
-    imageUrl    String?
-    imagePublicId String?
-    status      ProviderStatus @default(PENDING)
+model Provider {
+  id            String         @id @default(uuid())
+  name          String
+  email         String         @unique
+  phoneNumber   String
+  address       String
+  description   String?
+  imageUrl      String?
+  imagePublicId String?
+  status        ProviderStatus @default(PENDING)
 
-    userId String
-    user   User @relation(fields: [userId], references: [id])
-    
-    equipments Equipment[]
-    
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    deletedAt DateTime?
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
-    @@index([name])
-    @@map("providers")
+  equipments Equipment[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  rentals   Rental[]
+
+  @@index([name])
+  @@map("providers")
 }

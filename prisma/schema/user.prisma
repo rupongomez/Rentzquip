@@ -18,6 +18,8 @@ model User {
 
   provider Provider[]
   category Category[]
+  rentals  Rental[]
+  payments Payment[]
 
   @@map("users")
 }

@@ -17,14 +17,21 @@ enum UserStatus {
 
 enum EquipmentStatus {
   AVAILABLE
+  PENDING
   RENTED
   MAINTENANCE
 }
-
 
 enum ProviderStatus {
   ACTIVE
   BLOCKED
   PENDING
   REJECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
 }

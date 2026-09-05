@@ -1,6 +1,10 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import express, { type Application, type Request, type Response } from "express";
+import express, {
+  type Application,
+  type Request,
+  type Response,
+} from "express";
 import httpStatus from "http-status";
 import config from "./app/config";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
@@ -9,14 +13,15 @@ import { AuthRoutes } from "./app/module/auth/auth.route";
 import { ProviderRoute } from "./app/module/provider/provider.route";
 import { CategoryRoute } from "./app/module/category/category.route";
 import { EquipmentRoute } from "./app/module/equipment/equipment.route";
+import { RentalRoutes } from "./app/module/rental/rental.route";
 
 const app: Application = express();
 
 app.use(
-	cors({
-		origin: config.frontend_url,
-		credentials: true,
-	}),
+  cors({
+    origin: config.frontend_url,
+    credentials: true,
+  }),
 );
 
 // Enable URL-encoded form data parsing
@@ -30,13 +35,14 @@ app.use("/api/v1/auth", AuthRoutes);
 app.use("/api/v1/provider", ProviderRoute);
 app.use("/api/v1/category", CategoryRoute);
 app.use("/api/v1/equipment", EquipmentRoute);
+app.use("/api/v1/rental", RentalRoutes);
 
 // Basic route
 app.get("/", async (req: Request, res: Response) => {
-	res.status(httpStatus.OK).json({
-		success: true,
-		message: "Welcome to PH Healthcare System Backend",
-	});
+  res.status(httpStatus.OK).json({
+    success: true,
+    message: "Welcome to PH Healthcare System Backend",
+  });
 });
 
 app.use(globalErrorHandler);
