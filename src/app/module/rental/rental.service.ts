@@ -3,7 +3,7 @@ import { prisma } from "../../lib/prisma";
 import { RequestUser } from "../../middleware/checkAuth";
 import { AppError } from "../../utils/AppError";
 import httpStatus from "http-status";
-import { EquipmentStatus } from "../../../generated/prisma/enums";
+import { EquipmentStatus, RentalStatus } from "../../../generated/prisma/enums";
 
 const createRent = async (rentalData: IRentalPayload, user: RequestUser) => {
   const transaction = await prisma.$transaction(async (tx) => {
@@ -17,7 +17,6 @@ const createRent = async (rentalData: IRentalPayload, user: RequestUser) => {
       throw new AppError(httpStatus.NOT_FOUND, "Equipment not found");
     }
 
-    // TODO:or quantity more then available quantity
     if (getEquipment.quantity < rentalData.quantity) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
@@ -101,6 +100,59 @@ const createRent = async (rentalData: IRentalPayload, user: RequestUser) => {
   return transaction;
 };
 
+const approveRent = async (
+  rentalId: string,
+  newRentalStatus: RentalStatus,
+  user: RequestUser,
+) => {
+  const getProvider = await prisma.provider.findFirst({
+    where: {
+      userId: user.userId,
+    },
+  });
+  const getRental = await prisma.rental.findFirst({
+    where: {
+      id: rentalId,
+      providerId: getProvider?.id,
+    },
+  });
+
+  if (!getRental) {
+    throw new AppError(httpStatus.NOT_FOUND, "Rental not found");
+  }
+
+  if (getRental.rentalStatus === RentalStatus.APPROVED) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Rental is already approved");
+  }
+
+  if (getRental.rentalStatus === RentalStatus.REJECTED) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Rental is already rejected");
+  }
+
+  if (getRental.rentalStatus === RentalStatus.CANCELLED) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Rental is already cancelled");
+  }
+  if (getRental.rentalStatus === RentalStatus.COMPLETED) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Rental is already completed");
+  }
+  if (
+    getRental.rentalStatus === RentalStatus.LATE ||
+    getRental.rentalStatus === RentalStatus.ONGOING ||
+    getRental.rentalStatus === RentalStatus.PENDING
+  ) {
+    const updateRental = await prisma.rental.update({
+      where: {
+        id: rentalId,
+      },
+      data: {
+        rentalStatus: newRentalStatus,
+      },
+    });
+    return updateRental;
+  }
+};
+
 export const RentalsService = {
   createRent,
+  approveRent,
 };

@@ -21,6 +21,29 @@ const createRental = catchAsync(
   },
 );
 
+const approveRental = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { rentalId } = req.params;
+    const { rentalStatus } = req.body;
+    const user = req.user!;
+
+    const updatedRental = await RentalsService.approveRent(
+      rentalId as string,
+      rentalStatus,
+      user,
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Rental request approved successfully",
+      data: {
+        updatedRental,
+      },
+    });
+  },
+);
+
 export const RentalController = {
   createRental,
+  approveRental,
 };
