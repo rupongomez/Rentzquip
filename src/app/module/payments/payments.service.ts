@@ -1,3 +1,4 @@
+import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import { stripe } from "../../lib/stripe";
 import { RequestUser } from "../../middleware/checkAuth";
@@ -5,11 +6,9 @@ import { AppError } from "../../utils/AppError";
 import httpStatus from "http-status";
 
 const createPaymentSessionIntoDB = async (
-  paymentPayload: any,
+  rentalId: string,
   user: RequestUser,
 ) => {
-  const { rentalId } = paymentPayload;
-
   const transaction = await prisma.$transaction(async (tx) => {
     const findUser = await tx.user.findUnique({
       where: {
@@ -19,30 +18,6 @@ const createPaymentSessionIntoDB = async (
 
     if (!findUser) {
       throw new AppError(httpStatus.NOT_FOUND, "User not found");
-    }
-
-    const findRental = await tx.rental.findUnique({
-      where: {
-        id: rentalId,
-      },
-    });
-
-    if (!findRental) {
-      throw new AppError(httpStatus.NOT_FOUND, "Rental not found");
-    }
-
-    if (findRental.id !== user.userId) {
-      throw new AppError(
-        httpStatus.UNAUTHORIZED,
-        "You are not authorized to make payment for this rental",
-      );
-    }
-
-    if (findRental.rentalStatus !== "APPROVED") {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        "Only approved rentals can be paid for",
-      );
     }
 
     let stripeCustomerId = findUser.stripeCustomerId;
@@ -56,7 +31,65 @@ const createPaymentSessionIntoDB = async (
       stripeCustomerId = customer.id;
     }
 
-    // TODO:line 33 assignment 4
+    const findRental = await tx.rental.findUnique({
+      where: {
+        id: rentalId,
+      },
+    });
+
+    if (!findRental) {
+      throw new AppError(httpStatus.NOT_FOUND, "Rental not found");
+    }
+
+    if (findRental.customerId !== user.userId) {
+      throw new AppError(
+        httpStatus.UNAUTHORIZED,
+        "You are not authorized to make payment for this rental",
+      );
+    }
+
+    if (findRental.rentalStatus !== "APPROVED") {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "Only approved rentals can be paid for",
+      );
+    }
+    const equipmentDetails = await tx.equipment.findUnique({
+      where: {
+        id: findRental.equipmentId,
+      },
+    });
+
+    if (!equipmentDetails) {
+      throw new AppError(httpStatus.NOT_FOUND, "Equipment not found");
+    }
+
+    const rentalAmount =
+      (Number(equipmentDetails.rentalPrice) +
+        Number(equipmentDetails.securityDeposit)) *
+      findRental.quantity;
+
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      line_items: [
+        {
+          quantity: Number(findRental.quantity),
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: equipmentDetails.name,
+            },
+            unit_amount: rentalAmount * 100,
+          },
+        },
+      ],
+
+      customer: stripeCustomerId,
+      success_url: `${config.frontend_url}/paid?success=true`,
+      cancel_url: `${config.frontend_url}/paid?success=false`,
+      metadata: { userId: findUser.id, rentalId: findRental.id },
+    });
+    return session.url;
   });
 
   return transaction;
