@@ -18,7 +18,7 @@ export const handleCheckOutCompleted = async (
     );
   }
 
-  const amountInCents = session.amount_total!;
+  const amountInCents = session.amount_total as number;
   const amount = new Prisma.Decimal(amountInCents / 100);
 
   if (!amountInCents) {
@@ -45,6 +45,13 @@ export const handleCheckOutCompleted = async (
       status: PaymentStatus.COMPLETED,
       amount,
       transactionId,
+    },
+  });
+
+  await prisma.rental.update({
+    where: { id: rentalId },
+    data: {
+      rentalStatus: "PAID",
     },
   });
 };

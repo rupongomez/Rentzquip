@@ -1,9 +1,11 @@
+import Stripe from "stripe";
 import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import { stripe } from "../../lib/stripe";
 import { RequestUser } from "../../middleware/checkAuth";
 import { AppError } from "../../utils/AppError";
 import httpStatus from "http-status";
+import { handleCheckOutCompleted } from "./payment.utils";
 
 const createPaymentSessionIntoDB = async (
   rentalId: string,
@@ -95,6 +97,37 @@ const createPaymentSessionIntoDB = async (
   return transaction;
 };
 
+const handleStripeWebhook = async (payload: Buffer, signature: string) => {
+  const endpointSecret = config.stripe_webhook_secret;
+
+  try {
+    const event = stripe.webhooks.constructEvent(
+      payload,
+      signature,
+      endpointSecret,
+    );
+
+    switch (event.type) {
+      case "checkout.session.completed":
+        await handleCheckOutCompleted(
+          event.data.object as Stripe.Checkout.Session,
+        );
+        break;
+
+      // case "payment_intent.succeeded":
+      //   await handleCheckOutCompleted(event.data.object as any);
+      //   break;
+
+      default:
+        console.log(`Not matched event type ${event.type}`);
+    }
+  } catch (error: any) {
+    console.log("Stripe webhook verify error:", error.message);
+    throw error;
+  }
+};
+
 export const PaymentService = {
   createPaymentSessionIntoDB,
+  handleStripeWebhook,
 };

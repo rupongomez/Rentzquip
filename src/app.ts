@@ -17,7 +17,7 @@ import { RentalRoutes } from "./app/module/rental/rental.route";
 import { paymentRouter } from "./app/module/payments/payments.route";
 
 const app: Application = express();
-
+app.use("/api/v1/payments/webhook", express.raw({ type: "application/json" }));
 app.use(
   cors({
     origin: config.frontend_url,
