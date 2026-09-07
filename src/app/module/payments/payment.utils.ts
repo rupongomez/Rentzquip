@@ -33,7 +33,7 @@ export const handleCheckOutCompleted = async (
       rentalId: rentalId,
     },
     create: {
-      customerId: stripeCustomerId,
+      customerId: userId,
       rentalId: rentalId,
       transactionId: transactionId,
       amount,

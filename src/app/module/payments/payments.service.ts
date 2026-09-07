@@ -66,16 +66,13 @@ const createPaymentSessionIntoDB = async (
       throw new AppError(httpStatus.NOT_FOUND, "Equipment not found");
     }
 
-    const rentalAmount =
-      (Number(equipmentDetails.rentalPrice) +
-        Number(equipmentDetails.securityDeposit)) *
-      findRental.quantity;
+    const rentalAmount = findRental.rentalAmount.toNumber();
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: [
         {
-          quantity: Number(findRental.quantity),
+          quantity: 1,
           price_data: {
             currency: "usd",
             product_data: {
