@@ -40,4 +40,6 @@ export default {
 
   stripe_secret_key: process.env.STRIPE_SECRET_KEY!,
   stripe_webhook_secret: process.env.STRIPE_WEBHOOK_SECRET!,
+
+  late_fee_rate: process.env.LATE_FEE_RATE!,
 };
