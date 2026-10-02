@@ -32,6 +32,14 @@ export default {
   test_mod_password: process.env.test_mod_password!,
   test_mod_name: process.env.test_mod_name!,
 
+  test_provider_email: process.env.test_provider_email!,
+  test_provider_password: process.env.test_provider_password!,
+  test_provider_name: process.env.test_provider_name!,
+
+  test_user_email: process.env.test_user_email!,
+  test_user_password: process.env.test_user_password!,
+  test_user_name: process.env.test_user_name!,
+
   google_client_id: process.env.GOOGLE_CLIENT_ID!,
 
   cloudinary_cloud_name: process.env.CLOUDINARY_CLOUDE_NAME!,

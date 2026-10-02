@@ -4,7 +4,12 @@ import { updateLateFeeCronJob } from "./app/lib/cron";
 import { transporter } from "./app/lib/nodemailer";
 import { prisma } from "./app/lib/prisma";
 import { redisClient } from "./app/lib/redis";
-import { seedTestAdmin, seedTestMod } from "./app/utils/seed";
+import {
+  seedTestAdmin,
+  seedTestMod,
+  seedTestProvider,
+  seedTestUser,
+} from "./app/utils/seed";
 
 const PORT = config.port;
 
@@ -21,6 +26,8 @@ const main = async () => {
 
     await seedTestAdmin();
     await seedTestMod();
+    await seedTestProvider();
+    await seedTestUser();
     await updateLateFeeCronJob();
 
     app.listen(PORT, () => {
