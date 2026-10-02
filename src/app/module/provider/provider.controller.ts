@@ -55,7 +55,40 @@ const getProviderByUserId = catchAsync(
   },
 );
 
+const getAllProviders = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const providers = await ProviderService.getAllProviders();
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Providers retrieved successfully",
+      data: {
+        providers,
+      },
+    });
+  },
+);
+
+const approveProvider = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.params.userId;
+    const updatedProvider = await ProviderService.approveProvider(
+      userId as string,
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Provider approved successfully",
+      data: {
+        provider: updatedProvider,
+      },
+    });
+  },
+);
+
 export const ProviderController = {
   applyToBeProvider,
   getProviderByUserId,
+  getAllProviders,
+  approveProvider,
 };

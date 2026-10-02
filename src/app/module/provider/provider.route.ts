@@ -22,4 +22,16 @@ router.get(
   ProviderController.getProviderByUserId,
 );
 
+router.get(
+  "/all",
+  auth(Role.ADMIN, Role.MODERATOR),
+  ProviderController.getAllProviders,
+);
+
+router.patch(
+  "/approve/:userId",
+  auth(Role.ADMIN, Role.MODERATOR),
+  ProviderController.approveProvider,
+);
+
 export const ProviderRoute = router;

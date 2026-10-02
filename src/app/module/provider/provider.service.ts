@@ -99,7 +99,43 @@ const getProviderByUserId = async (userId: string) => {
   return provider;
 };
 
+const getAllProviders = async () => {
+  const providers = await prisma.provider.findMany();
+  return providers;
+};
+
+const approveProvider = async (userId: string) => {
+  const isProviderExist = await prisma.provider.findFirst({
+    where: {
+      userId,
+    },
+  });
+
+  if (!isProviderExist) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      "Provider not found for the given user ID.",
+    );
+  }
+  if (isProviderExist.status === "ACTIVE") {
+    throw new AppError(httpStatus.BAD_REQUEST, "Provider is already approved.");
+  }
+
+  const updatedProvider = await prisma.provider.update({
+    where: {
+      id: isProviderExist.id,
+    },
+    data: {
+      status: "ACTIVE",
+    },
+  });
+
+  return updatedProvider;
+};
+
 export const ProviderService = {
   applyToBeProvider,
   getProviderByUserId,
+  getAllProviders,
+  approveProvider,
 };
