@@ -77,13 +77,14 @@ const getSingleProviderById = catchAsync(
 const getAllProviders = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const query = req.query;
-    const providers = await ProviderService.getAllProviders(query);
+    const { data, meta } = await ProviderService.getAllProviders(query);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "Providers retrieved successfully",
       data: {
-        providers,
+        providers: data,
+        meta,
       },
     });
   },

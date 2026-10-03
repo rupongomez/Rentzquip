@@ -107,6 +107,7 @@ const getAllProviders = async (query: IProviderQuery) => {
   const skip = (page - 1) * limit;
   const sortBy = query.sortBy ? query.sortBy : "createdAt";
   const sortOrder = query.sortOrder ? query.sortOrder : "desc";
+  const statusFilter = query.status ? query.status : undefined;
 
   const andConditions: ProviderWhereInput[] = [];
 
@@ -118,6 +119,12 @@ const getAllProviders = async (query: IProviderQuery) => {
         { email: { contains: query.searchTerm, mode: "insensitive" } },
         { address: { contains: query.searchTerm, mode: "insensitive" } },
       ],
+    });
+  }
+
+  if (query.status) {
+    andConditions.push({
+      status: statusFilter,
     });
   }
 
@@ -139,7 +146,21 @@ const getAllProviders = async (query: IProviderQuery) => {
       [sortBy]: sortOrder,
     },
   });
-  return providers;
+
+  const totalProviderCount = await prisma.provider.count({
+    where: {
+      AND: andConditions,
+    },
+  });
+  return {
+    data: providers,
+    meta: {
+      page: page,
+      limit: limit,
+      total: totalProviderCount,
+      totalPage: Math.ceil(totalProviderCount / limit),
+    },
+  };
 };
 
 const getSingleProvidersById = async (providerId: string) => {

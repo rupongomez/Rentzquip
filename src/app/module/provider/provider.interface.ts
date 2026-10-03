@@ -1,3 +1,5 @@
+import { ProviderStatus } from "../../../generated/prisma/enums";
+
 export interface ProviderPayload {
   address: string;
   description: string;
@@ -12,4 +14,5 @@ export interface IProviderQuery {
   sortBy?: string;
   sortOrder?: "asc" | "desc";
   searchTerm?: string;
+  status?: ProviderStatus;
 }
