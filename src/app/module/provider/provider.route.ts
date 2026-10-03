@@ -19,7 +19,12 @@ router.post(
 router.get(
   "/me",
   auth(Role.PROVIDER, Role.CUSTOMER),
-  ProviderController.getProviderByUserId,
+  ProviderController.getProvidersOwnProfile,
+);
+router.get(
+  "/single/:providerId",
+  auth(Role.PROVIDER, Role.CUSTOMER),
+  ProviderController.getSingleProviderById,
 );
 
 router.get(
@@ -29,7 +34,7 @@ router.get(
 );
 
 router.patch(
-  "/approve/:userId",
+  "/status/:providerId",
   auth(Role.ADMIN, Role.MODERATOR),
   ProviderController.approveProvider,
 );

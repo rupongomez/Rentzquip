@@ -5,6 +5,7 @@ import httpStatus from "http-status";
 import type { ProviderPayload } from "./provider.interface";
 import { UploadApiResponse } from "cloudinary";
 import { cloudinaryUpload } from "../../lib/cloudinary";
+import { ProviderStatus } from "../../../generated/prisma/enums";
 
 const applyToBeProvider = async (
   user: RequestUser,
@@ -82,10 +83,10 @@ const applyToBeProvider = async (
   return newProvider;
 };
 
-const getProviderByUserId = async (userId: string) => {
+const getProvidersOwnProfile = async (user: RequestUser) => {
   const provider = await prisma.provider.findFirst({
     where: {
-      userId,
+      userId: user.userId,
     },
   });
 
@@ -104,10 +105,30 @@ const getAllProviders = async () => {
   return providers;
 };
 
-const approveProvider = async (userId: string) => {
+const getSingleProvidersById = async (providerId: string) => {
+  const provider = await prisma.provider.findUnique({
+    where: {
+      id: providerId,
+    },
+  });
+
+  if (!provider) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      "Provider not found for the given provider ID.",
+    );
+  }
+
+  return provider;
+};
+
+const approveProvider = async (
+  providerId: string,
+  newStatus: ProviderStatus,
+) => {
   const isProviderExist = await prisma.provider.findFirst({
     where: {
-      userId,
+      id: providerId,
     },
   });
 
@@ -126,7 +147,7 @@ const approveProvider = async (userId: string) => {
       id: isProviderExist.id,
     },
     data: {
-      status: "ACTIVE",
+      status: newStatus,
     },
   });
 
@@ -135,7 +156,8 @@ const approveProvider = async (userId: string) => {
 
 export const ProviderService = {
   applyToBeProvider,
-  getProviderByUserId,
+  getSingleProvidersById,
   getAllProviders,
   approveProvider,
+  getProvidersOwnProfile,
 };

@@ -40,10 +40,29 @@ const applyToBeProvider = catchAsync(
   },
 );
 
-const getProviderByUserId = catchAsync(
+const getProvidersOwnProfile = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const user = req.user as RequestUser;
-    const provider = await ProviderService.getProviderByUserId(user.userId);
+    const user = req.user;
+    const provider = await ProviderService.getProvidersOwnProfile(
+      user as RequestUser,
+    );
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Provider found successfully",
+      data: {
+        provider,
+      },
+    });
+  },
+);
+const getSingleProviderById = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const providerId = req.params.providerId;
+
+    const provider = await ProviderService.getSingleProvidersById(
+      providerId as string,
+    );
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -71,14 +90,16 @@ const getAllProviders = catchAsync(
 
 const approveProvider = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const userId = req.params.userId;
+    const providerId = req.params.providerId;
+    const newStatus = req.body.status;
     const updatedProvider = await ProviderService.approveProvider(
-      userId as string,
+      providerId as string,
+      newStatus,
     );
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: "Provider approved successfully",
+      message: "Provider Status updated successfully",
       data: {
         provider: updatedProvider,
       },
@@ -88,7 +109,8 @@ const approveProvider = catchAsync(
 
 export const ProviderController = {
   applyToBeProvider,
-  getProviderByUserId,
+  getProvidersOwnProfile,
   getAllProviders,
   approveProvider,
+  getSingleProviderById,
 };
