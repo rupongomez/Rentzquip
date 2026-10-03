@@ -82,10 +82,8 @@ const getAllProviders = catchAsync(
       statusCode: httpStatus.OK,
       success: true,
       message: "Providers retrieved successfully",
-      data: {
-        providers: data,
-        meta,
-      },
+      data: { data },
+      meta: meta,
     });
   },
 );

@@ -158,7 +158,7 @@ const getAllProviders = async (query: IProviderQuery) => {
       page: page,
       limit: limit,
       total: totalProviderCount,
-      totalPage: Math.ceil(totalProviderCount / limit),
+      totalPages: Math.ceil(totalProviderCount / limit),
     },
   };
 };
