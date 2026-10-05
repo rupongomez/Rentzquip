@@ -5,7 +5,7 @@ import httpStatus from "http-status";
 import type { IProviderQuery, ProviderPayload } from "./provider.interface";
 import { UploadApiResponse } from "cloudinary";
 import { cloudinaryUpload } from "../../lib/cloudinary";
-import { ProviderStatus } from "../../../generated/prisma/enums";
+import { ProviderStatus, Role } from "../../../generated/prisma/enums";
 import { ProviderWhereInput } from "../../../generated/prisma/models";
 
 const applyToBeProvider = async (
@@ -184,32 +184,48 @@ const approveProvider = async (
   providerId: string,
   newStatus: ProviderStatus,
 ) => {
-  const isProviderExist = await prisma.provider.findFirst({
-    where: {
-      id: providerId,
-    },
+  const transactionResult = await prisma.$transaction(async (tx) => {
+    const isProviderExist = await tx.provider.findFirst({
+      where: {
+        id: providerId,
+      },
+    });
+
+    if (!isProviderExist) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        "Provider not found for the given user ID.",
+      );
+    }
+    if (isProviderExist.status === "ACTIVE") {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "Provider is already approved.",
+      );
+    }
+
+    const updatedProvider = await tx.provider.update({
+      where: {
+        id: isProviderExist.id,
+      },
+      data: {
+        status: newStatus,
+      },
+    });
+
+    const updatedUserRole = await tx.user.update({
+      where: {
+        id: isProviderExist.userId,
+      },
+      data: {
+        role: Role.PROVIDER,
+      },
+    });
+
+    return updatedUserRole;
   });
 
-  if (!isProviderExist) {
-    throw new AppError(
-      httpStatus.NOT_FOUND,
-      "Provider not found for the given user ID.",
-    );
-  }
-  if (isProviderExist.status === "ACTIVE") {
-    throw new AppError(httpStatus.BAD_REQUEST, "Provider is already approved.");
-  }
-
-  const updatedProvider = await prisma.provider.update({
-    where: {
-      id: isProviderExist.id,
-    },
-    data: {
-      status: newStatus,
-    },
-  });
-
-  return updatedProvider;
+  return transactionResult;
 };
 
 export const ProviderService = {
