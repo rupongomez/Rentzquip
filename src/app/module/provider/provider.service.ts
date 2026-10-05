@@ -145,6 +145,7 @@ const getAllProviders = async (query: IProviderQuery) => {
     orderBy: {
       [sortBy]: sortOrder,
     },
+    include: { user: true },
   });
 
   const totalProviderCount = await prisma.provider.count({
