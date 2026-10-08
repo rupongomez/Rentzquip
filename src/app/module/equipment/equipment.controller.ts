@@ -61,9 +61,7 @@ const getSingleEquipment = catchAsync(
       statusCode: httpStatus.OK,
       success: true,
       message: "Equipment retrieved successfully",
-      data: {
-        equipment,
-      },
+      data: equipment,
     });
   },
 );
