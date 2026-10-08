@@ -40,14 +40,13 @@ const createEquipment = catchAsync(
 const getAllEquipment = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const query = req.query;
-    const allEquipment = await EquipmentService.getAllEquipment(query);
+    const { data, meta } = await EquipmentService.getAllEquipment(query);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: "All equipment retrieved successfully",
-      data: {
-        allEquipment,
-      },
+      data: data,
+      meta: meta,
     });
   },
 );
