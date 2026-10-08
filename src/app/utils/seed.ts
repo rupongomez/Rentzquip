@@ -91,8 +91,8 @@ export const seedTestMod = async () => {
 };
 
 export const seedTestProvider = async () => {
-  try {
-    const isTestProviderExists = await prisma.user.findFirst({
+  const transactionResult = await prisma.$transaction(async (tx) => {
+    const isTestProviderExists = await tx.user.findFirst({
       where: {
         role: Role.PROVIDER,
         email: config.test_provider_email,
@@ -117,7 +117,7 @@ export const seedTestProvider = async () => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const createTestMod = await prisma.user.create({
+    const createTestProvider = await tx.user.create({
       data: {
         name,
         password: hashedPassword,
@@ -127,10 +127,21 @@ export const seedTestProvider = async () => {
       },
     });
 
-    console.log("Test provider is created", createTestMod);
-  } catch (error) {
-    console.error("Error seeding test provider:", error);
-  }
+    const insertedIntoProviderTable = await tx.provider.create({
+      data: {
+        userId: createTestProvider.id,
+        address: "Test Address",
+        email: createTestProvider.email,
+        name: createTestProvider.name,
+        phoneNumber: "1234567890",
+      },
+    });
+
+    console.log("Test provider is created", createTestProvider);
+
+    return insertedIntoProviderTable;
+  });
+  return transactionResult;
 };
 
 export const seedTestUser = async () => {
