@@ -17,9 +17,7 @@ const createCheckoutSession = catchAsync(
       statusCode: httpStatus.OK,
       success: true,
       message: "Checkout session created successfully",
-      data: {
-        equipment,
-      },
+      data: equipment,
     });
   },
 );
