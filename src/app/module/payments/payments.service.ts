@@ -117,6 +117,11 @@ const handleStripeWebhook = async (payload: Buffer, signature: string) => {
       //   await handleCheckOutCompleted(event.data.object as any);
       //   break;
 
+      case "checkout.session.completed":
+        await handleCheckOutCompleted(
+          event.data.object as Stripe.Checkout.Session,
+        );
+        break;
       default:
         console.log(`Not matched event type ${event.type}`);
     }
