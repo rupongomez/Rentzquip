@@ -8,11 +8,16 @@ import { rentalValidationZodSchema } from "./rental.validation";
 const router = Router();
 
 router.post("/create", auth(Role.CUSTOMER), RentalController.createRental);
+router.get(
+  "/rental-history/all",
+  auth(Role.CUSTOMER),
+  RentalController.getAllRentalsForUser,
+);
 router.patch(
-	"/approve/:rentalId",
-	validateRequest(rentalValidationZodSchema),
-	auth(Role.PROVIDER),
-	RentalController.approveRental,
+  "/approve/:rentalId",
+  validateRequest(rentalValidationZodSchema),
+  auth(Role.PROVIDER),
+  RentalController.approveRental,
 );
 
 export const RentalRoutes = router;

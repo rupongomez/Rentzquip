@@ -67,6 +67,8 @@ const createPaymentSessionIntoDB = async (
     }
 
     const rentalAmount = findRental.rentalAmount.toNumber();
+    const securityDeposit = findRental.securityDeposit.toNumber();
+    const totalPayableAmount = rentalAmount + securityDeposit;
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -78,7 +80,7 @@ const createPaymentSessionIntoDB = async (
             product_data: {
               name: equipmentDetails.name,
             },
-            unit_amount: rentalAmount * 100,
+            unit_amount: totalPayableAmount * 100,
           },
         },
       ],
