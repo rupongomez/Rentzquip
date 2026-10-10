@@ -86,8 +86,8 @@ const createPaymentSessionIntoDB = async (
       ],
 
       customer: stripeCustomerId,
-      success_url: `${config.frontend_url}/paid?success=true`,
-      cancel_url: `${config.frontend_url}/paid?success=false`,
+      success_url: `${config.frontend_url}/user/payment?success=true`,
+      cancel_url: `${config.frontend_url}/user/payment?success=false`,
       metadata: { userId: findUser.id, rentalId: findRental.id },
     });
     return session.url;
