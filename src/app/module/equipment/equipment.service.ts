@@ -6,6 +6,7 @@ import type { IEquipmentPayload, IEquipmentQuery } from "./equipment.interface";
 import httpStatus from "http-status";
 import { cloudinaryUpload } from "../../lib/cloudinary";
 import type { EquipmentWhereInput } from "../../../generated/prisma/models";
+import { EquipmentStatus } from "../../../generated/prisma/enums";
 
 const createEquipment = async (
   equipmentData: IEquipmentPayload,
@@ -163,8 +164,91 @@ const getSingleEquipment = async (equipmentId: string) => {
   return equipment;
 };
 
+const getProvidersEquipmentByUserID = async (user: RequestUser) => {
+  const getUser = await prisma.user.findFirst({
+    where: {
+      id: user.userId,
+    },
+  });
+
+  if (!getUser) {
+    throw new AppError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  const isProviderExist = await prisma.provider.findFirst({
+    where: {
+      userId: user.userId,
+    },
+  });
+
+  if (!isProviderExist) {
+    throw new AppError(httpStatus.NOT_FOUND, "Provider not found");
+  }
+
+  const providersEquipment = await prisma.equipment.findMany({
+    where: {
+      providerId: isProviderExist.id,
+    },
+    include: {
+      provider: true,
+    },
+  });
+
+  return providersEquipment;
+};
+
+const changeEquipmentStatus = async (
+  equipmentId: string,
+  newStatus: EquipmentStatus,
+  user: RequestUser,
+) => {
+  const getUser = await prisma.user.findFirst({
+    where: {
+      id: user.userId,
+    },
+  });
+
+  if (!getUser) {
+    throw new AppError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  const isProviderExist = await prisma.provider.findFirst({
+    where: {
+      userId: user.userId,
+    },
+  });
+
+  if (!isProviderExist) {
+    throw new AppError(httpStatus.NOT_FOUND, "Provider not found");
+  }
+
+  const getEquipment = await prisma.equipment.findFirst({
+    where: {
+      id: equipmentId,
+      providerId: isProviderExist.id,
+    },
+  });
+
+  if (!getEquipment) {
+    throw new AppError(httpStatus.NOT_FOUND, "Equipment not found");
+  }
+
+  const updatedEquipment = await prisma.equipment.update({
+    where: {
+      id: equipmentId,
+    },
+    data: {
+      status: newStatus,
+    },
+  });
+
+  return updatedEquipment;
+};
+
 export const EquipmentService = {
   createEquipment,
   getAllEquipment,
   getSingleEquipment,
+  getProvidersEquipmentByUserID,
+  changeEquipmentStatus,
 };

@@ -14,10 +14,16 @@ router.get(
   RentalController.getAllRentalsForUser,
 );
 router.patch(
-  "/approve/:rentalId",
+  "/update-status/:rentalId",
   validateRequest(rentalValidationZodSchema),
   auth(Role.PROVIDER),
   RentalController.approveRental,
+);
+
+router.get(
+  "/provider-rentals/all",
+  auth(Role.PROVIDER),
+  RentalController.getAllRentalsForProvider,
 );
 
 export const RentalRoutes = router;

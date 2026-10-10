@@ -8,14 +8,25 @@ import { upload } from "../../lib/multer";
 const router = Router();
 
 router.post(
-	"/create",
-	auth(Role.PROVIDER),
-	upload.fields([{ name: "images", maxCount: 5 }]),
-	EquipmentController.createEquipment,
+  "/create",
+  auth(Role.PROVIDER),
+  upload.fields([{ name: "images", maxCount: 5 }]),
+  EquipmentController.createEquipment,
 );
 
 router.get("/all", EquipmentController.getAllEquipment);
 
 router.get("/single/:equipmentId", EquipmentController.getSingleEquipment);
+router.get(
+  "/providers-equipment",
+  auth(Role.PROVIDER),
+  EquipmentController.getProvidersEquipmentByUserID,
+);
+
+router.patch(
+  "/change-status/:equipmentId",
+  auth(Role.PROVIDER),
+  EquipmentController.changeEquipmentStatus,
+);
 
 export const EquipmentRoute = router;

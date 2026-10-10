@@ -105,6 +105,16 @@ const approveRent = async (
   newRentalStatus: RentalStatus,
   user: RequestUser,
 ) => {
+  if (
+    newRentalStatus !== RentalStatus.APPROVED &&
+    newRentalStatus !== RentalStatus.REJECTED &&
+    newRentalStatus !== RentalStatus.CANCELLED &&
+    newRentalStatus !== RentalStatus.COMPLETED &&
+    newRentalStatus !== RentalStatus.ONGOING
+  ) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Invalid rental status");
+  }
+
   const getProvider = await prisma.provider.findFirst({
     where: {
       userId: user.userId,
@@ -161,8 +171,28 @@ const getAllRentalsForUser = async (user: RequestUser) => {
   return getRentals;
 };
 
+const getAllRentalsForProvider = async (user: RequestUser) => {
+  const getProvider = await prisma.provider.findFirst({
+    where: {
+      userId: user.userId,
+    },
+  });
+
+  if (!getProvider) {
+    throw new AppError(httpStatus.NOT_FOUND, "Provider not found");
+  }
+
+  const getRentals = await prisma.rental.findMany({
+    where: {
+      providerId: getProvider.id,
+    },
+  });
+  return getRentals;
+};
+
 export const RentalsService = {
   createRent,
   approveRent,
   getAllRentalsForUser,
+  getAllRentalsForProvider,
 };

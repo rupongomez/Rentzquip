@@ -66,8 +66,45 @@ const getSingleEquipment = catchAsync(
   },
 );
 
+const getProvidersEquipmentByUserID = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as RequestUser;
+    const providersEquipment =
+      await EquipmentService.getProvidersEquipmentByUserID(user);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Provider's equipment retrieved successfully",
+      data: providersEquipment,
+    });
+  },
+);
+
+const changeEquipmentStatus = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { equipmentId } = req.params;
+    const { newStatus } = req.body;
+    const user = req.user as RequestUser;
+
+    const updatedEquipment = await EquipmentService.changeEquipmentStatus(
+      equipmentId as string,
+      newStatus,
+      user,
+    );
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Equipment status updated successfully",
+      data: updatedEquipment,
+    });
+  },
+);
+
 export const EquipmentController = {
   createEquipment,
   getAllEquipment,
   getSingleEquipment,
+  getProvidersEquipmentByUserID,
+  changeEquipmentStatus,
 };
