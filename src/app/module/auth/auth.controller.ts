@@ -29,12 +29,14 @@ const verifyUserOtp = catchAsync(async (req: Request, res: Response) => {
     secure: config.node_env === "development" ? false : true,
     sameSite: config.node_env === "development" ? "lax" : "none",
     maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
+    path: "/",
   });
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: config.node_env === "development" ? false : true,
     sameSite: config.node_env === "development" ? "lax" : "none",
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    path: "/",
   });
 
   sendResponse(res, {
@@ -153,6 +155,7 @@ const loginWithGoogle = catchAsync(async (req: Request, res: Response) => {
     httpOnly: true,
     secure: config.node_env === "development" ? false : true,
     sameSite: config.node_env === "development" ? "lax" : "none",
+    path: "/",
     maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
   });
   res.cookie("refreshToken", refreshToken, {
@@ -160,6 +163,7 @@ const loginWithGoogle = catchAsync(async (req: Request, res: Response) => {
     secure: config.node_env === "development" ? false : true,
     sameSite: config.node_env === "development" ? "lax" : "none",
     maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+    path: "/",
   });
 
   sendResponse(res, {
