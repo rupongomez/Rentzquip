@@ -69,9 +69,22 @@ const getAllRentalsForProvider = catchAsync(
   },
 );
 
+const getAllRentalsForAdmin = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const rentals = await RentalsService.getAllRentalsForAdmin();
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "All rentals retrieved successfully",
+      data: rentals,
+    });
+  },
+);
+
 export const RentalController = {
   createRental,
   approveRental,
   getAllRentalsForUser,
   getAllRentalsForProvider,
+  getAllRentalsForAdmin,
 };

@@ -190,9 +190,15 @@ const getAllRentalsForProvider = async (user: RequestUser) => {
   return getRentals;
 };
 
+const getAllRentalsForAdmin = async () => {
+  const getRentals = await prisma.rental.findMany();
+  return getRentals;
+};
+
 export const RentalsService = {
   createRent,
   approveRent,
   getAllRentalsForUser,
   getAllRentalsForProvider,
+  getAllRentalsForAdmin,
 };

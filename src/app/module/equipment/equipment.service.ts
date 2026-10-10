@@ -112,11 +112,9 @@ const getAllEquipment = async (query: IEquipmentQuery) => {
     });
   }
 
-  if (query.sortBy) {
+  if (query.categoryId) {
     andConditions.push({
-      [query.sortBy]: {
-        sortOrder: query.sortOrder,
-      },
+      categoryId: query.categoryId,
     });
   }
 

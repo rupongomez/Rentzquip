@@ -26,4 +26,10 @@ router.get(
   RentalController.getAllRentalsForProvider,
 );
 
+router.get(
+  "/admin-rentals/all",
+  auth(Role.ADMIN, Role.MODERATOR),
+  RentalController.getAllRentalsForAdmin,
+);
+
 export const RentalRoutes = router;

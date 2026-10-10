@@ -15,6 +15,7 @@ import { CategoryRoute } from "./app/module/category/category.route";
 import { EquipmentRoute } from "./app/module/equipment/equipment.route";
 import { RentalRoutes } from "./app/module/rental/rental.route";
 import { paymentRouter } from "./app/module/payments/payments.route";
+import { UserRoute } from "./app/module/user/user.route";
 
 const app: Application = express();
 app.use("/api/v1/payments/webhook", express.raw({ type: "application/json" }));
@@ -38,6 +39,7 @@ app.use("/api/v1/category", CategoryRoute);
 app.use("/api/v1/equipment", EquipmentRoute);
 app.use("/api/v1/rental", RentalRoutes);
 app.use("/api/v1/payments", paymentRouter);
+app.use("/api/v1/users", UserRoute);
 
 // Basic route
 app.get("/", async (req: Request, res: Response) => {
