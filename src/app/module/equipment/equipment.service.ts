@@ -6,247 +6,247 @@ import type { IEquipmentPayload, IEquipmentQuery } from "./equipment.interface";
 import httpStatus from "http-status";
 import { cloudinaryUpload } from "../../lib/cloudinary";
 import type { EquipmentWhereInput } from "../../../generated/prisma/models";
-import { EquipmentStatus } from "../../../generated/prisma/enums";
+import type { EquipmentStatus } from "../../../generated/prisma/enums";
 
 const createEquipment = async (
-  equipmentData: IEquipmentPayload,
-  images: Express.Multer.File[],
-  user: RequestUser,
+	equipmentData: IEquipmentPayload,
+	images: Express.Multer.File[],
+	user: RequestUser,
 ) => {
-  const getUser = await prisma.user.findFirst({
-    where: {
-      id: user.userId,
-    },
-  });
+	const getUser = await prisma.user.findFirst({
+		where: {
+			id: user.userId,
+		},
+	});
 
-  if (!getUser) {
-    throw new AppError(httpStatus.NOT_FOUND, "User not found");
-  }
+	if (!getUser) {
+		throw new AppError(httpStatus.NOT_FOUND, "User not found");
+	}
 
-  const isProviderExist = await prisma.provider.findFirst({
-    where: {
-      userId: user.userId,
-    },
-  });
+	const isProviderExist = await prisma.provider.findFirst({
+		where: {
+			userId: user.userId,
+		},
+	});
 
-  if (!isProviderExist) {
-    throw new AppError(httpStatus.NOT_FOUND, "Provider not found");
-  }
+	if (!isProviderExist) {
+		throw new AppError(httpStatus.NOT_FOUND, "Provider not found");
+	}
 
-  const isCategoryExist = await prisma.category.findFirst({
-    where: {
-      id: equipmentData.categoryId,
-    },
-  });
+	const isCategoryExist = await prisma.category.findFirst({
+		where: {
+			id: equipmentData.categoryId,
+		},
+	});
 
-  if (!isCategoryExist) {
-    throw new AppError(httpStatus.NOT_FOUND, "Category not found");
-  }
+	if (!isCategoryExist) {
+		throw new AppError(httpStatus.NOT_FOUND, "Category not found");
+	}
 
-  const imageUploadResult = await Promise.all(
-    images.map((img) => {
-      return new Promise<UploadApiResponse>((resolve, reject) => {
-        cloudinaryUpload.uploader
-          .upload_stream(
-            {
-              resource_type: "image",
-            },
-            async (error, result) => {
-              if (error) {
-                return reject(error);
-              }
-              if (!result) {
-                return reject(
-                  new AppError(httpStatus.BAD_REQUEST, "Image upload failed"),
-                );
-              }
-              resolve(result);
-            },
-          )
-          .end(img?.buffer);
-      });
-    }),
-  );
+	const imageUploadResult = await Promise.all(
+		images.map((img) => {
+			return new Promise<UploadApiResponse>((resolve, reject) => {
+				cloudinaryUpload.uploader
+					.upload_stream(
+						{
+							resource_type: "image",
+						},
+						async (error, result) => {
+							if (error) {
+								return reject(error);
+							}
+							if (!result) {
+								return reject(
+									new AppError(httpStatus.BAD_REQUEST, "Image upload failed"),
+								);
+							}
+							resolve(result);
+						},
+					)
+					.end(img?.buffer);
+			});
+		}),
+	);
 
-  const newEquipment = await prisma.equipment.create({
-    data: {
-      name: equipmentData.name,
-      categoryId: equipmentData.categoryId,
-      brand: equipmentData.brand,
-      description: equipmentData.description,
-      model: equipmentData.model,
-      quantity: equipmentData.quantity,
-      rentalPrice: equipmentData.rentalPrice,
-      securityDeposit: equipmentData.securityDeposit,
-      imageUrl: imageUploadResult.map((img) => ({
-        url: img.secure_url,
-        publicId: img.public_id,
-      })),
-      providerId: isProviderExist.id,
-    },
-    include: {
-      provider: true,
-    },
-  });
+	const newEquipment = await prisma.equipment.create({
+		data: {
+			name: equipmentData.name,
+			categoryId: equipmentData.categoryId,
+			brand: equipmentData.brand,
+			description: equipmentData.description,
+			model: equipmentData.model,
+			quantity: equipmentData.quantity,
+			rentalPrice: equipmentData.rentalPrice,
+			securityDeposit: equipmentData.securityDeposit,
+			imageUrl: imageUploadResult.map((img) => ({
+				url: img.secure_url,
+				publicId: img.public_id,
+			})),
+			providerId: isProviderExist.id,
+		},
+		include: {
+			provider: true,
+		},
+	});
 
-  return newEquipment;
+	return newEquipment;
 };
 
 const getAllEquipment = async (query: IEquipmentQuery) => {
-  const limit = query.limit ? Number(query.limit) : 10;
-  const page = query.page ? Number(query.page) : 1;
-  const skip = (page - 1) * limit;
-  const sortBy = query.sortBy ? query.sortBy : "createdAt";
-  const sortOrder = query.sortOrder ? query.sortOrder : "desc";
+	const limit = query.limit ? Number(query.limit) : 10;
+	const page = query.page ? Number(query.page) : 1;
+	const skip = (page - 1) * limit;
+	const sortBy = query.sortBy ? query.sortBy : "createdAt";
+	const sortOrder = query.sortOrder ? query.sortOrder : "desc";
 
-  const andConditions: EquipmentWhereInput[] = [];
+	const andConditions: EquipmentWhereInput[] = [];
 
-  if (query.searchTerm) {
-    andConditions.push({
-      OR: [
-        { name: { contains: query.searchTerm, mode: "insensitive" } },
-        { description: { contains: query.searchTerm, mode: "insensitive" } },
-        { model: { contains: query.searchTerm, mode: "insensitive" } },
-        { brand: { contains: query.searchTerm, mode: "insensitive" } },
-      ],
-    });
-  }
+	if (query.searchTerm) {
+		andConditions.push({
+			OR: [
+				{ name: { contains: query.searchTerm, mode: "insensitive" } },
+				{ description: { contains: query.searchTerm, mode: "insensitive" } },
+				{ model: { contains: query.searchTerm, mode: "insensitive" } },
+				{ brand: { contains: query.searchTerm, mode: "insensitive" } },
+			],
+		});
+	}
 
-  if (query.categoryId) {
-    andConditions.push({
-      categoryId: query.categoryId,
-    });
-  }
+	if (query.categoryId) {
+		andConditions.push({
+			categoryId: query.categoryId,
+		});
+	}
 
-  const allEquipment = await prisma.equipment.findMany({
-    where: {
-      AND: andConditions,
-    },
-    take: limit,
-    skip,
-    orderBy: {
-      [sortBy]: sortOrder,
-    },
-    include: {
-      provider: true,
-    },
-  });
+	const allEquipment = await prisma.equipment.findMany({
+		where: {
+			AND: andConditions,
+		},
+		take: limit,
+		skip,
+		orderBy: {
+			[sortBy]: sortOrder,
+		},
+		include: {
+			provider: true,
+		},
+	});
 
-  const totalEquipmentCount = await prisma.equipment.count({
-    where: {
-      AND: andConditions,
-    },
-  });
+	const totalEquipmentCount = await prisma.equipment.count({
+		where: {
+			AND: andConditions,
+		},
+	});
 
-  return {
-    data: allEquipment,
+	return {
+		data: allEquipment,
 
-    meta: {
-      total: totalEquipmentCount,
-      page: page,
-      limit: limit,
-      totalPages: Math.ceil(totalEquipmentCount / limit),
-    },
-  };
+		meta: {
+			total: totalEquipmentCount,
+			page: page,
+			limit: limit,
+			totalPages: Math.ceil(totalEquipmentCount / limit),
+		},
+	};
 };
 
 const getSingleEquipment = async (equipmentId: string) => {
-  const equipment = await prisma.equipment.findUnique({
-    where: {
-      id: equipmentId,
-    },
-    include: {
-      provider: true,
-    },
-  });
-  return equipment;
+	const equipment = await prisma.equipment.findUnique({
+		where: {
+			id: equipmentId,
+		},
+		include: {
+			provider: true,
+		},
+	});
+	return equipment;
 };
 
 const getProvidersEquipmentByUserID = async (user: RequestUser) => {
-  const getUser = await prisma.user.findFirst({
-    where: {
-      id: user.userId,
-    },
-  });
+	const getUser = await prisma.user.findFirst({
+		where: {
+			id: user.userId,
+		},
+	});
 
-  if (!getUser) {
-    throw new AppError(httpStatus.NOT_FOUND, "User not found");
-  }
+	if (!getUser) {
+		throw new AppError(httpStatus.NOT_FOUND, "User not found");
+	}
 
-  const isProviderExist = await prisma.provider.findFirst({
-    where: {
-      userId: user.userId,
-    },
-  });
+	const isProviderExist = await prisma.provider.findFirst({
+		where: {
+			userId: user.userId,
+		},
+	});
 
-  if (!isProviderExist) {
-    throw new AppError(httpStatus.NOT_FOUND, "Provider not found");
-  }
+	if (!isProviderExist) {
+		throw new AppError(httpStatus.NOT_FOUND, "Provider not found");
+	}
 
-  const providersEquipment = await prisma.equipment.findMany({
-    where: {
-      providerId: isProviderExist.id,
-    },
-    include: {
-      provider: true,
-    },
-  });
+	const providersEquipment = await prisma.equipment.findMany({
+		where: {
+			providerId: isProviderExist.id,
+		},
+		include: {
+			provider: true,
+		},
+	});
 
-  return providersEquipment;
+	return providersEquipment;
 };
 
 const changeEquipmentStatus = async (
-  equipmentId: string,
-  newStatus: EquipmentStatus,
-  user: RequestUser,
+	equipmentId: string,
+	newStatus: EquipmentStatus,
+	user: RequestUser,
 ) => {
-  const getUser = await prisma.user.findFirst({
-    where: {
-      id: user.userId,
-    },
-  });
+	const getUser = await prisma.user.findFirst({
+		where: {
+			id: user.userId,
+		},
+	});
 
-  if (!getUser) {
-    throw new AppError(httpStatus.NOT_FOUND, "User not found");
-  }
+	if (!getUser) {
+		throw new AppError(httpStatus.NOT_FOUND, "User not found");
+	}
 
-  const isProviderExist = await prisma.provider.findFirst({
-    where: {
-      userId: user.userId,
-    },
-  });
+	const isProviderExist = await prisma.provider.findFirst({
+		where: {
+			userId: user.userId,
+		},
+	});
 
-  if (!isProviderExist) {
-    throw new AppError(httpStatus.NOT_FOUND, "Provider not found");
-  }
+	if (!isProviderExist) {
+		throw new AppError(httpStatus.NOT_FOUND, "Provider not found");
+	}
 
-  const getEquipment = await prisma.equipment.findFirst({
-    where: {
-      id: equipmentId,
-      providerId: isProviderExist.id,
-    },
-  });
+	const getEquipment = await prisma.equipment.findFirst({
+		where: {
+			id: equipmentId,
+			providerId: isProviderExist.id,
+		},
+	});
 
-  if (!getEquipment) {
-    throw new AppError(httpStatus.NOT_FOUND, "Equipment not found");
-  }
+	if (!getEquipment) {
+		throw new AppError(httpStatus.NOT_FOUND, "Equipment not found");
+	}
 
-  const updatedEquipment = await prisma.equipment.update({
-    where: {
-      id: equipmentId,
-    },
-    data: {
-      status: newStatus,
-    },
-  });
+	const updatedEquipment = await prisma.equipment.update({
+		where: {
+			id: equipmentId,
+		},
+		data: {
+			status: newStatus,
+		},
+	});
 
-  return updatedEquipment;
+	return updatedEquipment;
 };
 
 export const EquipmentService = {
-  createEquipment,
-  getAllEquipment,
-  getSingleEquipment,
-  getProvidersEquipmentByUserID,
-  changeEquipmentStatus,
+	createEquipment,
+	getAllEquipment,
+	getSingleEquipment,
+	getProvidersEquipmentByUserID,
+	changeEquipmentStatus,
 };

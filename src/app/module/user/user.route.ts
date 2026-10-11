@@ -6,9 +6,9 @@ import { UserController } from "./user.controller";
 const router = Router();
 
 router.patch(
-  "/change-status/:userId",
-  auth(Role.ADMIN, Role.PROVIDER),
-  UserController.changeUserStatus,
+	"/change-status/:userId",
+	auth(Role.ADMIN, Role.PROVIDER),
+	UserController.changeUserStatus,
 );
 
 router.get("/all", auth(Role.ADMIN), UserController.getAllUsers);

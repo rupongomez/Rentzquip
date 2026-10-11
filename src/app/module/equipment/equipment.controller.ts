@@ -8,103 +8,103 @@ import { CreateEquipmentZodSchema } from "./equipment.validation";
 import { AppError } from "../../utils/AppError";
 
 const createEquipment = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const payload = JSON.parse(req.body.data);
-    const user = req.user as RequestUser;
-    const images = req.files as { [fieldname: string]: Express.Multer.File[] };
-    const imageFiles = images?.["images"] || [];
+	async (req: Request, res: Response, next: NextFunction) => {
+		const payload = JSON.parse(req.body.data);
+		const user = req.user as RequestUser;
+		const images = req.files as { [fieldname: string]: Express.Multer.File[] };
+		const imageFiles = images?.["images"] || [];
 
-    const zodValidationResult = CreateEquipmentZodSchema.safeParse(payload);
-    if (!zodValidationResult.success) {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        "Invalid request payload" + zodValidationResult.error.format(),
-      );
-    }
-    const category = await EquipmentService.createEquipment(
-      zodValidationResult.data,
-      imageFiles,
-      user,
-    );
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Category created successfully",
-      data: {
-        category,
-      },
-    });
-  },
+		const zodValidationResult = CreateEquipmentZodSchema.safeParse(payload);
+		if (!zodValidationResult.success) {
+			throw new AppError(
+				httpStatus.BAD_REQUEST,
+				"Invalid request payload" + zodValidationResult.error.format(),
+			);
+		}
+		const category = await EquipmentService.createEquipment(
+			zodValidationResult.data,
+			imageFiles,
+			user,
+		);
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Category created successfully",
+			data: {
+				category,
+			},
+		});
+	},
 );
 
 const getAllEquipment = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const query = req.query;
-    const { data, meta } = await EquipmentService.getAllEquipment(query);
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "All equipment retrieved successfully",
-      data: data,
-      meta: meta,
-    });
-  },
+	async (req: Request, res: Response, next: NextFunction) => {
+		const query = req.query;
+		const { data, meta } = await EquipmentService.getAllEquipment(query);
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "All equipment retrieved successfully",
+			data: data,
+			meta: meta,
+		});
+	},
 );
 
 const getSingleEquipment = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const { equipmentId } = req.params;
-    const equipment = await EquipmentService.getSingleEquipment(
-      equipmentId as string,
-    );
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Equipment retrieved successfully",
-      data: equipment,
-    });
-  },
+	async (req: Request, res: Response, next: NextFunction) => {
+		const { equipmentId } = req.params;
+		const equipment = await EquipmentService.getSingleEquipment(
+			equipmentId as string,
+		);
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Equipment retrieved successfully",
+			data: equipment,
+		});
+	},
 );
 
 const getProvidersEquipmentByUserID = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const user = req.user as RequestUser;
-    const providersEquipment =
-      await EquipmentService.getProvidersEquipmentByUserID(user);
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Provider's equipment retrieved successfully",
-      data: providersEquipment,
-    });
-  },
+	async (req: Request, res: Response, next: NextFunction) => {
+		const user = req.user as RequestUser;
+		const providersEquipment =
+			await EquipmentService.getProvidersEquipmentByUserID(user);
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Provider's equipment retrieved successfully",
+			data: providersEquipment,
+		});
+	},
 );
 
 const changeEquipmentStatus = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const { equipmentId } = req.params;
-    const { newStatus } = req.body;
-    const user = req.user as RequestUser;
+	async (req: Request, res: Response, next: NextFunction) => {
+		const { equipmentId } = req.params;
+		const { newStatus } = req.body;
+		const user = req.user as RequestUser;
 
-    const updatedEquipment = await EquipmentService.changeEquipmentStatus(
-      equipmentId as string,
-      newStatus,
-      user,
-    );
+		const updatedEquipment = await EquipmentService.changeEquipmentStatus(
+			equipmentId as string,
+			newStatus,
+			user,
+		);
 
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Equipment status updated successfully",
-      data: updatedEquipment,
-    });
-  },
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Equipment status updated successfully",
+			data: updatedEquipment,
+		});
+	},
 );
 
 export const EquipmentController = {
-  createEquipment,
-  getAllEquipment,
-  getSingleEquipment,
-  getProvidersEquipmentByUserID,
-  changeEquipmentStatus,
+	createEquipment,
+	getAllEquipment,
+	getSingleEquipment,
+	getProvidersEquipmentByUserID,
+	changeEquipmentStatus,
 };
